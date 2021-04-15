@@ -7,23 +7,23 @@ import re
 from method import Method
 import inspect
 import urllib.parse
+from bfs import bfs
 
 
 log = Logger('Check Class')
 class check:
     ha = 0
     def __init__(self,ha):
-        self.ha = 5
-        if re.match('^/.+','/catch'):
-            print('hh')
-        print(re.match('^/.+|\.\..+','..asd'))
+        log.make()
+        print(self.ha)
+        print(re.match('/.+|\.\..+','/../asdf'))
         try:
             soup = BeautifulSoup(urlopen("asdf"),'lxml')
         except Exception as e:
             print(str(e))
             log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+'asdf')
         me = Method()
-        #print(me.find_url('https://www.naver.com'))
+        print(me.find_url('https://www.naver.com'))
     
     def get_line(self):
         """get the line number of code

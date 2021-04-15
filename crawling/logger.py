@@ -4,9 +4,12 @@ class Logger:
 
     def __init__(self,name,time = None):
         self.name = name
+
+    def make(self,time=None):
         if time is None:
             time = datetime.now()
         print('\033[33m' ,time,  self.name + ' 생성!'+'\033[0m')
+        
 
     def error(self,message,time = None):
         """ message get error message
