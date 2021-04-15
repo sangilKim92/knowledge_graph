@@ -6,7 +6,7 @@ class Logger:
         self.name = name
         if time is None:
             time = datetime.now()
-        print(time, '\033[33m' + self.name + ' 생성!'+'\033[0m')
+        print('\033[33m' ,time,  self.name + ' 생성!'+'\033[0m')
 
     def error(self,message,time = None):
         """ message get error message
@@ -17,7 +17,7 @@ class Logger:
         """
         if time is None:
             time = datetime.now()
-        print(time,'\033[31m'+'Error: ' + self.name + " -> " + message ,'\033[0m')
+        print('\033[31m' ,time,'Error: ' + self.name + " -> " + message ,'\033[0m')
         
     def info(self,message,time = None):
         """
@@ -25,7 +25,7 @@ class Logger:
         """
         if time is None:
             time = datetime.now()
-        print(time,'\033[96m'+'Info: '+self.name+" -> "+ message + '\033[0m')
+        print('\033[96m' ,time,'Info: '+self.name+" -> "+ message + '\033[0m')
 
 
 if __name__== "__main__":

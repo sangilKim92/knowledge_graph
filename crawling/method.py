@@ -17,17 +17,17 @@ class Method:
         log.info('find_url() start!')
 
         if not url:
-            log.info("find_url() Line="+self.get_line()+" does not have url")
+            log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+' '" does not have url")
             return
 
         if type(url) is not str:
-            log.info("find_url() Line="+self.get_line()+" has not str:url")
+            log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+' '" has not str:url")
             return
 
         try:
             soup = BeautifulSoup(urlopen(url),'lxml')
         except Exception as e:
-            log.error("find_url() line="+self.get_line()+str(e))
+            log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
             return self.links
 
         for link in soup.findAll('a'):
@@ -40,7 +40,7 @@ class Method:
                 #상대주소를 절대주소로 url 변경
                 temp_url = urllib.parse.urljoin(url,temp_url)
             else:
-                #주소가 아니고 method는 None 처리
+                #그 외는 None 처리
                 temp_url=None
 
             if temp_url and temp_url not in self.visited:
@@ -50,15 +50,19 @@ class Method:
         return self.links #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
 
     def scraping(self):
-            """Let's start the scraping
-            """
-        og.info("scraping() start!")
+        """Let's start the scraping
+            속도향상을 위해 multi processes 와 multi threading 적용
+        """
+        log.info("scraping() start!")
+        return
 
     #STATIC class 로 만들어서 모든 파일에서 사용해야 한다.
     def get_line(self):
         """get the line number of code
         """
         return str(inspect.currentframe().f_lineno)+' '
+    
+    
 
 if __name__=='__main__':
     method = Method()

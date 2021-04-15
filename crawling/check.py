@@ -21,7 +21,7 @@ class check:
             soup = BeautifulSoup(urlopen("asdf"),'lxml')
         except Exception as e:
             print(str(e))
-            log.error("find_url() line="+self.get_line()+'asdf')
+            log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+'asdf')
         me = Method()
         #print(me.find_url('https://www.naver.com'))
     
