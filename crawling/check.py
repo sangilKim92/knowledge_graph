@@ -23,8 +23,9 @@ class check:
             print(str(e))
             log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+'asdf')
         me = Method()
-        print(me.find_url('https://www.naver.com'))
-    
+        me.find_url('https://www.naver.com')
+        test = 'https://www,naver.com/김천'.encode('utf-8')
+        
     def get_line(self):
         """get the line number of code
         """

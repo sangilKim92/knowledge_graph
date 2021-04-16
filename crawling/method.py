@@ -24,8 +24,8 @@ class Method:
         log.make()
         self.visited = {}
         self.links = deque()
-        Config = namedtuple('Config',('save_file','link_level','max_num','allowed_url','not_allowed_url','url','query'))
         self.answer = []
+        Config = namedtuple('Config',('save_file','link_level','max_num','allowed_url','not_allowed_url','url','query'))
         try:
             with open("./config.json", "r") as st_json:
                 config = json.loads(st_json.read()) if st_json else config
@@ -33,11 +33,11 @@ class Method:
             log.error("init() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
         else:
             self.config = Config(*config.values())
+        print(self.config)
 
     #@classmethod
     def find_url(self, url):
         log.info('find_url() start!')
-
         #arguments url null check
         if not url:
             log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+" args: url does not exist")
@@ -53,9 +53,20 @@ class Method:
         except Exception as e:
             log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
             return None
-
+        
         for link in soup.findAll('a'):
             temp_url = str(link.get('href'))
+
+            allow = self.allowed_url_check(temp_url)
+            if not allow:
+                continue
+            
+            disallow = self.not_allowed_url_check(temp_url)
+            if not disallow:
+                #만약 상대주소로 되어있다면 not_allowed_url_check에 넣은게 들어갈 수 도 있다.
+                # 가령 /policy/privacy.html 같은 경우 절대주소로 바꾸면 www.naver.com/policy/privacy.html 로 된다.
+                # 따라서 걸러지지 않는데 이는 처음 시작 주소를 잘선택하면 문제없다. 
+                continue
 
             if 'http' in temp_url:
                 #절대주소
@@ -70,7 +81,7 @@ class Method:
             if temp_url and temp_url not in self.visited:
                 self.visited.setdefault(temp_url,True)
                 self.links.append(temp_url)
-
+        print(self.links)
         return soup #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
 
     def scraping(self):
@@ -100,6 +111,24 @@ class Method:
 
         return
     
+    def allowed_url_check(self,url):
+        if not self.config.allowed_url:
+            return True
+
+        for i in self.config.allowed_url:
+            if i in url:
+                return True
+        return False
+
+    def not_allowed_url_check(self, url):
+        if not self.config.not_allowed_url:
+            return True
+        
+        for i in self.config.not_allowed_url:
+            if i in url:
+                return  False
+        return True
+
     def query_check(self, soup):
         if not soup:
             log.info('query_check() does not have soup! line = '+str(inspect.currentframe.f_lineno))
