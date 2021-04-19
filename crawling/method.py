@@ -36,9 +36,15 @@ class Method:
         print(self.config)
 
     #@classmethod
-    def find_url(self, url):
+    def find_url(self):
         log.info('find_url() start!')
         #arguments url null check
+        links_size = len(self.links)
+
+        for i in range(links_size):
+            #현재 links에 들어있는 만큼 popleft로 빼야 한다.
+            url = self.links.popleft()
+            pass
         if not url:
             log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+" args: url does not exist")
             return
@@ -48,12 +54,14 @@ class Method:
             log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+" args: url tpye is not string")
             return
 
+
         try:
             soup = BeautifulSoup(urlopen(url),'lxml')
         except Exception as e:
             log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
             return None
         
+
         for link in soup.findAll('a'):
             temp_url = str(link.get('href'))
 
@@ -61,17 +69,18 @@ class Method:
             if not allow:
                 continue
             
+            #만약 상대주소로 되어있다면 not_allowed_url_check에 넣은게 들어갈 수 도 있다.
+            # 가령 /policy/privacy.html 같은 경우 절대주소로 바꾸면 www.naver.com/policy/privacy.html 로 된다.
+            # 따라서 걸러지지 않는데 이는 처음 시작 주소를 잘선택하면 문제없다. 
             disallow = self.not_allowed_url_check(temp_url)
             if not disallow:
-                #만약 상대주소로 되어있다면 not_allowed_url_check에 넣은게 들어갈 수 도 있다.
-                # 가령 /policy/privacy.html 같은 경우 절대주소로 바꾸면 www.naver.com/policy/privacy.html 로 된다.
-                # 따라서 걸러지지 않는데 이는 처음 시작 주소를 잘선택하면 문제없다. 
                 continue
 
             if 'http' in temp_url:
                 #절대주소
                 pass
-            elif re.match('/.+|\.\..+' , temp_url): #match 함수는 시작부터 일치하는지 검사한다. search는 문자열 내에 존재하면 찾아준다.
+            elif re.match('/.+|\.\..+' , temp_url): 
+                #match 함수는 시작부터 일치하는지 검사한다. search는 문자열 내에 존재하면 찾아준다.
                 #상대주소를 절대주소로 url 변경
                 temp_url = urllib.parse.urljoin(url,temp_url)
             else:
@@ -81,8 +90,8 @@ class Method:
             if temp_url and temp_url not in self.visited:
                 self.visited.setdefault(temp_url,True)
                 self.links.append(temp_url)
-        print(self.links)
         return soup #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
+
 
     def scraping(self):
         """Let's start the scraping
@@ -142,12 +151,6 @@ class Method:
                 return True
         return False
 
-    #STATIC class 로 만들어서 모든 파일에서 사용해야 한다.
-    def get_line(self):
-        """get the line number of code
-        """
-        return str(inspect.currentframe().f_lineno)+' '
-    
     
 if __name__== "__main__":
     method = Method()
