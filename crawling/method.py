@@ -4,15 +4,16 @@ from collections import deque
 from logger import Logger
 from urllib.parse import urljoin, urlparse
 from os import makedirs
-import os.path, time, re, json, requests, inspect, os
+import os.path, time, re, json, requests, inspect, os, math
 from collections import namedtuple
-import math
 from datetime import datetime
+import urllib.request
 
 config = {
     "save_file":"./data/",
     "abs_save_file":"./abs_data/",
     "link_level":3,
+    "max":1000,
     "thread":1,
     "allowed_url":[],
     "not_allowed_url":[],
@@ -20,16 +21,24 @@ config = {
     "query":[]
 }
 
+headers = { 
+    'User-Agent' : ('Mozilla/5.0 (Windows NT 10.0;Win64; x64)\
+    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98\
+    Safari/537.36'),
+    'Accept-Language': 'en-US,en;q=0.8',
+} 
+
 
 log = Logger('Method Class')
 class Method:
     def __init__(self):
         log.make()
         global config
+        global headers
         self.visited = {}
         self.links = deque()
         self.answer = []
-        Config = namedtuple('Config',('save_file','abs_save_file','link_level','thread','allowed_url','not_allowed_url','url','query'))
+        Config = namedtuple('Config',('save_file','abs_save_file','link_level','max','thread','allowed_url','not_allowed_url','url','query'))
         try:
             with open("./config.json", "r") as st_json:
                 config = json.loads(st_json.read())
@@ -37,6 +46,7 @@ class Method:
             log.error("init() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
         finally:
             self.config = Config(*config.values())
+            self.headers = headers
 
     #@classmethod
     def find_url(self, url):
@@ -51,7 +61,8 @@ class Method:
             return
 
         try:
-            soup = BeautifulSoup(requests.get(url).text,'lxml')
+            req = requests.get(url, headers= self.headers,timeout=2).text
+            soup = BeautifulSoup(req,'lxml')
         except Exception as e:
             log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' Error: '+str(e))
             return None
@@ -69,8 +80,8 @@ class Method:
             if not disallow:
                 continue
 
-            #다운받으려는 url가 실행파일, 집파일, rmp, deb, gz인 경우 건너뛴다.
-            if re.search('(exe)$|(zip)$|(rpm)$|(gz)$|(deb)$', temp_url):
+            #request q보내려는 url가 실행파일, 집파일, rmp, deb, gz인 경우 건너뛴다.
+            if re.search('(exe)$|(zip)$|(rpm)$|(gz)$|(deb)$|(txt)$|(csv)$|(pdf)$|(ppt)$', temp_url):
                 continue
 
             if 'https' in temp_url:
@@ -89,18 +100,51 @@ class Method:
                 self.links.append(temp_url)
             
         return soup #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
+    
+    def hashCode(self, url):
+        #url를 hashCode로 바꾼다.
+        #python 내장 hash는 같은 값이 들어가도 다른 값을 return하기에 새로 정의한다.
+        answer = 17
+        mul = 11
+        for idx in url:
+            answer = answer * mul +  ord(idx)
+        return str(answer)
 
     def download_file(self,url):
         try:
+            """
+            #url 마지막 /뒤에 . 이 있다면 파일일 가능성이 있다. 
+            path = urlparse(url).path.rsplit('/',1)[-1]
+            if '.' in path:
+                print(path)
+                return
+            """
             savedir = os.path.dirname(self.config.save_file)
             if not os.path.exists(savedir):
                 log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
                 makedirs(savedir)
-            site = urlopen(url,timeout = 5)
-            if site.read().__sizeof__() > 400000:
+            
+            #주소 사이즈가 너무 크거나 로딩이 오래걸리면 out
+
+            url = urllib.parse.quote(url, safe=':/&?=')
+            
+            save_file = self.config.save_file+self.hashCode(url)+'.txt'
+            if os.path.exists(save_file):
+                log.info('download_file() File= {} is already exists'.format(url))
                 return False
-            urlretrieve(url, self.config.save_file+str(datetime.now()))
-            log.info("download_file() File = "+self.config.save_file+str(datetime.now())+" 생성!")
+
+            req = Request(url, headers = self.headers)
+            site = urlopen(req,timeout = 2).read()
+            #사이트가 너무 크면 넘어감
+            if site.__sizeof__() > 400000:
+                return False
+            #원하는 단어가 없으면 넘어감
+            if not self.query_check(site):
+                return False
+            #url주소는 /를 포함하기에 url를 주소로 만들수 없다. 따로 hashCode를 만들어 주소를 숫자로 바꾼다.
+            with open(save_file, mode="wb") as f:
+                f.write(site)
+                log.info("download_file() File = "+save_file+" 생성!")
             return True
             #다운받으면 다운받은 주소 넘겨주기
         except Exception as e:
@@ -110,13 +154,13 @@ class Method:
 
     def scraping(self):
         """Let's start the scraping
-            속도향상을 위해 multi processes 와 multi threading 적용
+            속도향상을 위해 multi processes 적용
         """
         log.info("scraping() start!")
 
-        Answer = namedtuple('answer',('url','text'))
         self.links.append(self.config.url)
         #몇 단계까지 크롤링할건지
+        number = 0
         for i in range(self.config.link_level):
             if not self.links:
                 log.info('Scraping() does not have url! line='+str(inspect.currentframe().f_lineno))
@@ -128,14 +172,17 @@ class Method:
             num = len(self.links)
             log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+ " ->  {}번째 Link_level scraping -> num 개수:{}".format(i+1,num))
             for a in range(num):
-                print(a,end=' ')
+                number += 1
+                if number > self.config.max:
+                    log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+" -> max: {} 까지 완료".format(number))
+                    return
                 url  = self.links.popleft()
-                print(url)
+                print(a, ' ', url)
                 check = self.download_file(url)
                 if check:
-                    if i < self.config.link_level - 1:
-                        soup = self.find_url(url)
                     self.find_content(url)
+                if i < self.config.link_level - 1:
+                    soup = self.find_url(url)
                 log.cut()
             #데이터를 먼저 가져온 다음 link 넣기
         return
@@ -167,7 +214,7 @@ class Method:
             return True
 
         for i in self.config.query:
-            if i in str(soup):
+            if str(i).encode('utf-8') in soup:
                 return True
         return False
 
@@ -180,7 +227,21 @@ class Method:
         """
         Tag = namedtuple('tag',('idx','result','content'))
         try:
-            soup = BeautifulSoup(requests.get(url).text,'lxml')
+            url = urllib.parse.quote(url, safe=':/?=')
+
+            savedir = os.path.dirname(self.config.abs_save_file)
+            if not os.path.exists(savedir):
+                log.info("find_content() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
+                makedirs(savedir)
+
+            save_file = self.config.abs_save_file+self.hashCode(url)+'.txt'
+            if os.path.exists(save_file):
+                log.info('find_content() File= {} is already exists'.format(url))
+                return
+
+            req = requests.get(url, headers= self.headers,timeout=2).text
+            soup = BeautifulSoup(req,'lxml')
+    
         except Exception as e:
             log.error('find_content() line= '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
             return 
@@ -194,7 +255,13 @@ class Method:
         e = math.log(1)
         """
             식 = CTDi = Ci/Ti * log( (Ci / nLCi * LCi) + (LCb/Cb*Ci) + (e) ) ( Ci* Ti / LCi / LTi)
-        
+            Ci = length of all tag's characters
+            Ti = number of tags
+            nLCi = length of not link tag's characters
+            LCi = length of link tag's characters
+            LTi = number of a link tag's
+            LCb = number of body tag's a link
+            Cb = Length of body all tag's chracters
         """
         max_result = 0
         pos = 0
@@ -216,14 +283,10 @@ class Method:
                 max_result = result
                 pos = idx
         try:
-            savedir = os.path.dirname(self.config.abs_save_file)
-            if not os.path.exists(savedir):
-                log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
-                makedirs(savedir)
-            text_file = open(self.config.abs_save_file+str(datetime.now())+'.txt', 'w')
+            text_file = open(save_file, 'w')
             text_file.write(url+'\n')
             text_file.write(all_tag[pos].text)
-            log.info('find_content() File = '+self.config.abs_save_file+str(datetime.now())+" 생성!")
+            log.info('find_content() File = '+save_file+" 생성!")
         except Exception as e:
             log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
         
