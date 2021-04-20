@@ -23,13 +23,14 @@ log = Logger('Method Class')
 class Method:
     def __init__(self):
         log.make()
+        global config
         self.visited = {}
         self.links = deque()
         self.answer = []
         Config = namedtuple('Config',('save_file','link_level','thread','allowed_url','not_allowed_url','url','query'))
         try:
             with open("./config.json", "r") as st_json:
-                config = json.loads(st_json.read()) if st_json else config
+                config = json.loads(st_json.read())
         except Exception as e:
             log.error("init() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
         finally:
@@ -174,6 +175,7 @@ class Method:
     def find_content(self,url):
         """
             HTML안의 핵심 tag 뽑는 알고리즘
+
             Args:
                 url: tag 뽑을 url주소
         """
@@ -181,19 +183,19 @@ class Method:
 
         soup = BeautifulSoup(urlopen(url),'lxml')
         all_tag = [tag for tag in soup.find_all()]
-        body = soup.find_all('body')
+        body = soup.find('body')
         #body의 a link 개수를 넘긴다.
-        LCb = self.number_of_a_characters(body[0])
+        LCb = self.number_of_a_characters(body)
         #body의 text 길이를 넘긴다.
-        Cb = self.number_of_characters(body[0])
+        Cb = self.number_of_characters(body)
         e = math.log(1)
         """
             식 = CTDi = Ci/Ti * log( (Ci / nLCi * LCi) + (LCb/Cb*Ci) + (e) ) ( Ci* Ti / LCi / LTi)
         
         """
         max_result = 0
-        #각 태그마다 Composite Text Density를 구한다.
         pos = 0
+        #각 태그마다 Composite Text Density를 구한다.
         for idx,tag in enumerate(all_tag):
             #text 길이를 넘긴다.
             Ci = self.number_of_characters(tag)
@@ -210,7 +212,13 @@ class Method:
             if result > max_result:
                 max_result = result
                 pos = idx
-        print(all_tag[pos].text)
+        try:
+            text_file = open('./'+str(datetime.now())+'.txt', 'w')
+            text_file.write(url)
+            text_file.write(all_tag[pos].text)
+        except Exception as e:
+            log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+        return all_tag[pos].text
 
     
     def number_of_tag(self,tag):
