@@ -6,10 +6,12 @@ from urllib.parse import urljoin, urlparse
 from os import makedirs
 import os.path, time, re, json, requests, inspect, os
 from collections import namedtuple
-
+import math
+from datetime import datetime
 
 config = {
-    "save_file":"./",
+    "save_file":"./data/",
+    "abs_save_file":"./abs_data/",
     "link_level":3,
     "thread":1,
     "allowed_url":[],
@@ -27,7 +29,7 @@ class Method:
         self.visited = {}
         self.links = deque()
         self.answer = []
-        Config = namedtuple('Config',('save_file','link_level','thread','allowed_url','not_allowed_url','url','query'))
+        Config = namedtuple('Config',('save_file','abs_save_file','link_level','thread','allowed_url','not_allowed_url','url','query'))
         try:
             with open("./config.json", "r") as st_json:
                 config = json.loads(st_json.read())
@@ -82,27 +84,26 @@ class Method:
             if temp_url and temp_url not in self.visited:
                 self.visited.setdefault(temp_url,True)
                 self.links.append(temp_url)
+        log.info('find_url() end!')
+            
         return soup #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
 
     def download_file(self,url):
+        log.info('download_file() start line'+str(inspect.currentframe().f_lineno))
         o = urlparse(url)
-        savepath = self.config.save_file+o.netloc + o.path
-        if re.search(r"/$",savepath):
-            savepath += "index.html"
-        savedir = os.path.dirname(savepath)
-        if os.path.exists(savepath):return savepath
+        savedir = os.path.dirname(self.config.save_file)
 
         if not os.path.exists(savedir):
             log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
             makedirs(savedir)
         try:
-            urlretrieve(url, savepath)
+            urlretrieve(url, self.config.save_file+str(datetime.now()))
             log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" download file")
-            return savepath
+            return True
             #다운받으면 다운받은 주소 넘겨주기
         except Exception as e:
             log.error("download_file() line = "+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
-            return None
+            return False
 
 
     def scraping(self):
@@ -115,7 +116,7 @@ class Method:
         self.links.append(self.config.url)
         #몇 단계까지 크롤링할건지
         for i in range(self.config.link_level):
-            log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+ "{}번째 Link_level scraping 중".format(i+1))
+            log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+ " ->  {}번째 Link_level scraping 중".format(i+1))
             if not self.links:
                 log.info('Scraping() does not have url! line='+str(inspect.currentframe().f_lineno))
 
@@ -123,22 +124,16 @@ class Method:
             #순서와 리스트 다시 고려해서
             #yield 사용할지 link부터할지 정해야함
             num = len(self.links)
-            for a in num:
+            for a in range(num):
                 url  = self.links.popleft()
-                #download_file(url)
-
-                if i < self.config.link_level - 1:
-                    #마지막이라면 url를 더이상 추가할 필요없다.
-                    #find_url(url)
-                    #
-                    pass
+                check = self.download_file(url)
+                
+                if check:
+                    if i < self.config.link_level - 1:
+                        soup = self.find_url(url)
+                    self.find_content(url)
             #데이터를 먼저 가져온 다음 link 넣기
             
-            soup = find_url(url)
-
-            
-            #파싱 method
-
         return
     
     def allowed_url_check(self,url):
@@ -179,9 +174,9 @@ class Method:
             Args:
                 url: tag 뽑을 url주소
         """
+        log.info('find_content() start!')
         Tag = namedtuple('tag',('idx','result','content'))
-
-        soup = BeautifulSoup(urlopen(url),'lxml')
+        soup = BeautifulSoup(requests.get(url).text,'lxml')
         all_tag = [tag for tag in soup.find_all()]
         body = soup.find('body')
         #body의 a link 개수를 넘긴다.
@@ -197,6 +192,7 @@ class Method:
         pos = 0
         #각 태그마다 Composite Text Density를 구한다.
         for idx,tag in enumerate(all_tag):
+            log.info('find_content() for문 도는중!')
             #text 길이를 넘긴다.
             Ci = self.number_of_characters(tag)
             #태그의 개수를 넘긴다.
@@ -213,11 +209,13 @@ class Method:
                 max_result = result
                 pos = idx
         try:
-            text_file = open('./'+str(datetime.now())+'.txt', 'w')
-            text_file.write(url)
+            text_file = open(self.config.abs_save_file+str(datetime.now())+'.txt', 'w')
+            text_file.write(url+'\n')
             text_file.write(all_tag[pos].text)
         except Exception as e:
             log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+        
+        log.info('find_content() end!')
         return all_tag[pos].text
 
     

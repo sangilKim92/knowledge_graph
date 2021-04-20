@@ -18,16 +18,9 @@ class check:
     ha = 0
     def __init__(self,ha):
         log.make()
-        try:
-            soup = BeautifulSoup(urlopen("asdf"),'lxml')
-        except Exception as e:
-            print(str(e))
-            log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' '+'asdf')
         me = Method()
         #me.find_url('https://www.naver.com')
-        test = 'https://www,naver.com/김천'.encode('utf-8')
-        url = 'https://goodtrip.tistory.com/216'
-        print(self.find_content(url))
+        me.scraping()
 
     def get_line(self):
         """get the line number of code
@@ -76,7 +69,7 @@ class check:
                 pos = idx
         try:
             text_file = open('./'+str(datetime.now())+'.txt', 'w')
-            text_file.write(url)
+            text_file.write(url+'\n')
             text_file.write(all_tag[pos].text)
         except Exception as e:
             log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
