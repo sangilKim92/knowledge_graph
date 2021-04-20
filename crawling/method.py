@@ -40,7 +40,6 @@ class Method:
 
     #@classmethod
     def find_url(self, url):
-        log.info('find_url() start!')
         #arguments url null check
         if not url:
             log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+" args: url does not exist")
@@ -70,7 +69,11 @@ class Method:
             if not disallow:
                 continue
 
-            if 'http' in temp_url:
+            #다운받으려는 url가 실행파일, 집파일, rmp, deb, gz인 경우 건너뛴다.
+            if re.search('(exe)$|(zip)$|(rpm)$|(gz)$|(deb)$', temp_url):
+                continue
+
+            if 'https' in temp_url:
                 #절대주소
                 pass
             elif re.match('/.+|\.\..+' , temp_url):
@@ -84,21 +87,20 @@ class Method:
             if temp_url and temp_url not in self.visited:
                 self.visited.setdefault(temp_url,True)
                 self.links.append(temp_url)
-        log.info('find_url() end!')
             
         return soup #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
 
     def download_file(self,url):
-        log.info('download_file() start line'+str(inspect.currentframe().f_lineno))
-        o = urlparse(url)
-        savedir = os.path.dirname(self.config.save_file)
-
-        if not os.path.exists(savedir):
-            log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
-            makedirs(savedir)
         try:
+            savedir = os.path.dirname(self.config.save_file)
+            if not os.path.exists(savedir):
+                log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
+                makedirs(savedir)
+            site = urlopen(url,timeout = 5)
+            if site.read().__sizeof__() > 400000:
+                return False
             urlretrieve(url, self.config.save_file+str(datetime.now()))
-            log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" download file")
+            log.info("download_file() File = "+self.config.save_file+str(datetime.now())+" 생성!")
             return True
             #다운받으면 다운받은 주소 넘겨주기
         except Exception as e:
@@ -116,24 +118,26 @@ class Method:
         self.links.append(self.config.url)
         #몇 단계까지 크롤링할건지
         for i in range(self.config.link_level):
-            log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+ " ->  {}번째 Link_level scraping 중".format(i+1))
             if not self.links:
                 log.info('Scraping() does not have url! line='+str(inspect.currentframe().f_lineno))
+                return
 
             #pop 쓰지않아야 할듯
             #순서와 리스트 다시 고려해서
             #yield 사용할지 link부터할지 정해야함
             num = len(self.links)
+            log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+ " ->  {}번째 Link_level scraping -> num 개수:{}".format(i+1,num))
             for a in range(num):
+                print(a,end=' ')
                 url  = self.links.popleft()
+                print(url)
                 check = self.download_file(url)
-                
                 if check:
                     if i < self.config.link_level - 1:
                         soup = self.find_url(url)
                     self.find_content(url)
+                log.cut()
             #데이터를 먼저 가져온 다음 link 넣기
-            
         return
     
     def allowed_url_check(self,url):
@@ -174,10 +178,14 @@ class Method:
             Args:
                 url: tag 뽑을 url주소
         """
-        log.info('find_content() start!')
         Tag = namedtuple('tag',('idx','result','content'))
-        soup = BeautifulSoup(requests.get(url).text,'lxml')
+        try:
+            soup = BeautifulSoup(requests.get(url).text,'lxml')
+        except Exception as e:
+            log.error('find_content() line= '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+            return 
         all_tag = [tag for tag in soup.find_all()]
+        #print(len(all_tag))
         body = soup.find('body')
         #body의 a link 개수를 넘긴다.
         LCb = self.number_of_a_characters(body)
@@ -192,7 +200,6 @@ class Method:
         pos = 0
         #각 태그마다 Composite Text Density를 구한다.
         for idx,tag in enumerate(all_tag):
-            log.info('find_content() for문 도는중!')
             #text 길이를 넘긴다.
             Ci = self.number_of_characters(tag)
             #태그의 개수를 넘긴다.
@@ -209,13 +216,17 @@ class Method:
                 max_result = result
                 pos = idx
         try:
+            savedir = os.path.dirname(self.config.abs_save_file)
+            if not os.path.exists(savedir):
+                log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
+                makedirs(savedir)
             text_file = open(self.config.abs_save_file+str(datetime.now())+'.txt', 'w')
             text_file.write(url+'\n')
             text_file.write(all_tag[pos].text)
+            log.info('find_content() File = '+self.config.abs_save_file+str(datetime.now())+" 생성!")
         except Exception as e:
             log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
         
-        log.info('find_content() end!')
         return all_tag[pos].text
 
     

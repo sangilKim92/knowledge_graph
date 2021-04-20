@@ -1,10 +1,10 @@
 {
     "save_file":"./data/",
     "abs_save_file":"./abs_data/",
-    "link_level":3,
+    "link_level":2,
     "thread":1,
     "allowed_url":[],
     "not_allowed_url":[],
-    "url":"https://www.naver.com",
+    "url":"https://naver.com",
     "query":[]
 }

@@ -10,6 +10,10 @@ class Logger:
             time = datetime.now()
         print('\033[33m' ,time,  self.name + ' 생성!'+'\033[0m')
         
+    def cut(self,time = None):
+        if time is None:
+            time = datetime.now()
+        print(time,self.name,'-------------------------------------------------------------------------------------------------------------------------------')
 
     def error(self,message,time = None):
         """ message get error message
