@@ -1,0 +1,27 @@
+https://stackoverflow.com/questions/36108621/get-all-html-tags-with-beautiful-soup
+Here is an efficient function that I use to parse different HTML and text documents:
+def parse_docs(path, format, tags):
+    """
+    Parse the different files in path, having html or txt format, and extract the text content.
+    Returns a list of strings, where every string is a text document content.
+    :param path: str
+    :param format: str
+    :param tags: list
+    :return: list
+    """
+
+    docs = []
+    if format == "html":
+        for document in tqdm(get_list_of_files(path)):
+            # print(document)
+            soup = BeautifulSoup(open(document, encoding='utf-8').read())
+            text = '\n'.join([''.join(s.findAll(text=True)) for s in
+                              soup.findAll(tags)])  # parse all <p>, <div>, and <h> tags
+            docs.append(text)
+    else:
+        for document in tqdm(get_list_of_files(path)):
+            text = open(document, encoding='utf-8').read()
+            docs.append(text)
+    return docs
+
+a simple call: parse_docs('/path/to/folder', 'html', ['p', 'h', 'div']) will return a list of text strings.
