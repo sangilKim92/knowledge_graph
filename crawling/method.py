@@ -104,6 +104,9 @@ class Method:
     def hashCode(self, url):
         #url를 hashCode로 바꾼다.
         #python 내장 hash는 같은 값이 들어가도 다른 값을 return하기에 새로 정의한다.
+        if not url:
+            logger.info('hashCode() Line='+str(inspect.currentframe().f_lineno)+' url is not exist')
+
         answer = 17
         mul = 11
         for idx in url:
@@ -119,10 +122,12 @@ class Method:
                 print(path)
                 return
             """
-            savedir = os.path.dirname(self.config.save_file)
-            if not os.path.exists(savedir):
+            if not url:
+                logger.info('download_file() Line='+str(inspect.currentframe().f_lineno)+' url is not exist')
+
+            if not os.path.exists(self.config.save_file):
                 log.info("download_file() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
-                makedirs(savedir)
+                makedirs(self.config.save_file)
             
             #주소 사이즈가 너무 크거나 로딩이 오래걸리면 out
 
@@ -227,12 +232,11 @@ class Method:
         """
         Tag = namedtuple('tag',('idx','result','content'))
         try:
-            url = urllib.parse.quote(url, safe=':/?=')
+            url = urllib.parse.quote(url, safe=':/&?=')
 
-            savedir = os.path.dirname(self.config.abs_save_file)
-            if not os.path.exists(savedir):
+            if not os.path.exists(self.config.abs_save_file):
                 log.info("find_content() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
-                makedirs(savedir)
+                makedirs(self.config.abs_save_file)
 
             save_file = self.config.abs_save_file+self.hashCode(url)+'.txt'
             if os.path.exists(save_file):

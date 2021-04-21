@@ -9,7 +9,7 @@ import inspect
 import urllib.parse
 import urllib.request
 from collections import namedtuple
-import math
+import math, os
 from datetime import datetime
 
 
@@ -21,16 +21,9 @@ class check:
         me = Method()
         #me.find_url('https://www.naver.com')
         me.scraping()
-        #print(urllib.parse.quote('https://www.naver.com/홍대', safe=':/?='))
+        #self.get_file(self.read_file(self.get_file_list('./')),'download')
         
-    def hashCode(self, url):
-        #url를 hashCode로 바꾼다.
-        #python 내장 hash는 같은 값이 들어가도 다른 값을 return하기에 새로 정의한다.
-        answer = 2300
-        mul = 17
-        for idx in url:
-            answer = answer * mul +  ord(idx)
-        return str(answer)
+
 
 if __name__=='__main__':
     ch = check(23)
