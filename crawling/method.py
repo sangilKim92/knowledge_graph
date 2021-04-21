@@ -50,6 +50,11 @@ class Method:
 
     #@classmethod
     def find_url(self, url):
+        """find link tag in html
+        
+            Args:
+                url: url take address of website finding the link tag
+        """
         #arguments url null check
         if not url:
             log.info("find_url() Line="+str(inspect.currentframe().f_lineno)+" args: url does not exist")
@@ -102,13 +107,18 @@ class Method:
         return soup #deque로 넘겨주어 popleft()로 앞에서부터 뺀다.
     
     def hashCode(self, url):
-        #url를 hashCode로 바꾼다.
-        #python 내장 hash는 같은 값이 들어가도 다른 값을 return하기에 새로 정의한다.
+        """We don't need to get same web page so we have to distingush the same page
+            If I store website using url, most of url contain '/' which is prohibitted by operating system.
+            So I have to change url to int result using hashCode method
+
+            Args:
+                url: url is the website url 
+        """
         if not url:
             logger.info('hashCode() Line='+str(inspect.currentframe().f_lineno)+' url is not exist')
 
         answer = 17
-        mul = 11
+        mul = 7
         for idx in url:
             answer = answer * mul +  ord(idx)
         return str(answer)
@@ -142,9 +152,11 @@ class Method:
             site = urlopen(req,timeout = 2).read()
             #사이트가 너무 크면 넘어감
             if site.__sizeof__() > 400000:
+                log.info('download_file() File = '+url+" is out of size")
                 return False
             #원하는 단어가 없으면 넘어감
             if not self.query_check(site):
+                log.info('download_file() File = '+url+" does not contain query terms")
                 return False
             #url주소는 /를 포함하기에 url를 주소로 만들수 없다. 따로 hashCode를 만들어 주소를 숫자로 바꾼다.
             with open(save_file, mode="wb") as f:
