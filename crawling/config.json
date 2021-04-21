@@ -1,6 +1,6 @@
 {
-    "save_file":"/home/com/data/",
-    "abs_save_file":"/home/com/abs_data/",
+    "save_file":"/home/data/crawling/data/",
+    "abs_save_file":"/home/data/crawling/abs_data/",
     "link_level":7,
     "max":20000000,
     "thread":1,
