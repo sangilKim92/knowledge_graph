@@ -1,26 +1,43 @@
-import os, time, os.path
+import os, time, os.path 
+from os import makedirs
 import re
 from konlpy.tag import Mecab
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-import glob, pickle
+from collections import namedtuple
+import glob, pickle, json
 import pandas as pd
 import numpy as np
+import inspect
+from logger import Logger
+import csv
+
+config = {
+    "files_folder":"./data/",
+    "visited_file":"./visited_file.csv'",
+    "word_idx_file":"./word_idf.json",
+    "word_files":"./words/"
+}
+
+log = Logger('Utils class')
 class utils:
     def __init__(self):
-        folder = "/home/data/crawling/data/"
-        file_list = self.get_file_list(folder)
-        self.files_to_array(file_list)
+        global config
+        Config = namedtuple('Config',('files_folder','visited_file','word_idf_file','word_files'))
+        try:
+            with open("./config2.json", "r") as st_json:
+                config = json.loads(st_json.read())
+        except Exception as e:
+            log.error("init() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
+        finally:
+            self.config = Config(*config.values())
+        self.save_map(self.config.word_files,self.config.word_idf_file)
+        #file_list = self.files_to_map(folder,visited)
+        #(self.get_visited_file(visited))
         
         #array과 dic, corpus를 저장시키고
         #비교할 query문과 array를 dic을 활용하여 비교한 다음 관련 corpus를 가져온다.
         #self.save_array_file()
-
-
-    def save_map_file(self,name,dic):
-        with open(name,'wb') as fw:
-            pickle.dump(dic,fw)
-    
 
     def save_file(self, name,file1):
         with open(name,'wb') as wb:
@@ -32,45 +49,108 @@ class utils:
         for item in glob.glob(os.path.join(folder,"*")):
             yield item
 
+    def get_word_idx(self, file):
+        default = {}
+        try:
+            with open(file, 'r', encoding='utf-8') as f:
+                return json.loads(f.read(), encoding='euc-kr')
+        except Exception as e:
+            log.error("Get_word_idx() Line="+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+            return default
 
-    def files_to_array(self, folder):
+    def get_map(self, file):
+        if not file:
+            log.info("get_map() Line="+str(inspect.currentframe().f_lineno)+" file is not exist!")
+            return
+
+        default = {}
+        try:
+            with open(file, 'r', encoding='utf-8') as f:
+                data = json.loads(f.read(), encoding='euc-kr')
+        except Exception as e:
+            log.error("get_map() Line="+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+            data = default
+        finally:
+            return list(data)
+        
+    def save_map(self,word_files, word_idf_file):
+        if not word_files:
+            folder='./'
+
+        if not os.path.exists(word_files):
+            log.info("save_map() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
+            makedirs(word_files)
+        
+        words = self.get_map(word_idf_file)
+        for word in words:
+             if not os.path.exists(word_files + word+'.csv'):
+                 with open(word_files + word + '.csv','w', encoding= 'utf-8') as f:
+                     f.write(word)
+                     f.close()
+
+    def make_linked_list(self, folder, htmls, save_pos):
+        #visited file에 없다면 폴더 words안의 csv파일에 추가시킨다.
+        pass
+
+    def get_visited_file(self, file):
+        try:
+            with open(file,'r') as f:
+                lst = f.read()
+                lst = lst.split(',')
+                lst = [li.strip() for li in lst]
+                return lst
+        except Exception as e:
+            log.error('Get_visited_file() Line = '+ str(inspect.currentframe().f_lineno)+ " Error: "+str(e))
+            return []
+        
+    def files_to_map(self, folder, visited_file):
         """
-        I only want korean so I don't need english and other language
-        This method make dictionary using files and korean
-
+        Get http list and make dictionary files
+        dictionary take key and values, key is refering word and values is indicating numbers of word in files
+        
         Args:
-            files: collections of html files
+            foler is the directory which have a files
         """
         m = Mecab()
-        corpus = []
-        ori_corpus = []
-        for item in folder:
-            if os.path.isfile(item):
+        answer = {}
+        #이미 넣은 파일들은 건너뛰게 하는 함수
+        visited = self.get_visited_file(visited_file)
+        check = False
+        #print(visited)
+        for item in self.get_file_list(folder):
+            #print(item)
+            if os.path.isfile(item) and item not in visited:
                 encoding = ['utf-8', 'cp949']
                 for encode in encoding:
+                    print(encode)
                     try:
-                        with open(item, 'r', encoding=encode) as f:
-                            docs=""
-                            sentences = f.read()
-                            sentences = re.sub('[^가-힣ㄱ-ㅎ ]',' ',sentences)
-                            sentences = re.sub(r'(.)\1+',r'\1\1',sentences)
-                            for word in m.pos(sentences):
+                        with open(item,'r', encoding = encode) as f:
+                            html = f.read()
+                            html = re.sub('[^가-힣ㄱ-ㅎ ]',' ',html)
+                            html = re.sub(r'(.)\1+',r'\1\1',html)
+                            for word in m.pos(html):
                                 if word[1] in ['NNP','NNG','NNB','VA']:
-                                    docs = docs +" "+ word[0]
-                            corpus.append(docs)
-                            ori_corpus.append(sentences.encode('utf-8'))
-                            f.close()
-                            break
+                                    answer.setdefault(word[0],1)
+                                    answer[word[0]] = answer[word[0]] + 1
+                            visited.append(item)
+                            check = True
                     except Exception as e:
-                        #log.error('files_to_array() Line = ')
-                        print("Error: {}".format(e))
-                        f.close()
-        tfidf = TfidfVectorizer().fit(corpus)
-        self.save_file('/home/data/crawling/index_array.txt',tfidf.transform(corpus).toarray())
-        print(tfidf.transform(corpus).toarray().shape)
-        #self.save_map_file('/home/data/crawling/mapping.pickle',tfidf.vocabulary_)
-        #self.save_file('/home/data/crawling/index_corpus.csv',ori_corpus)
-        return 
+                        log.error('Files_to_map() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+        if answer:
+            try:
+                json.dump(answer,open('word_idf.json','w'))
+            except Exception as e:
+                log.error("Files_to_map() Line = " +str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+
+        if check:
+            try:
+                with open(visited_file,'w',encoding='utf-8') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(visited)
+            except Exception as e:
+                log.error("Files_to_map Line = " +str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+
+        return True
 
 if __name__=="__main__":
     utils = utils()

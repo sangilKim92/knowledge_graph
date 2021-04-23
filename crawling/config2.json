@@ -1,5 +1,6 @@
 {
-    "save_file":"",
-    "mapping_file":"",
-    "array_file":""
+    "files_folder":"./data/",
+    "visited_file":"./visited_file.csv'",
+    "word_idf_file":"./word_idf.json",
+    "word_files":"./words/"
 }
