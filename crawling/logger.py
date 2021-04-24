@@ -13,7 +13,7 @@ class Logger:
     def cut(self,time = None):
         if time is None:
             time = datetime.now()
-        print(time,self.name,'-------------------------------------------------------------------------------------------------------------------------------')
+        print(time,self.name,'-'*110)
 
     def error(self,message,time = None):
         """ message get error message

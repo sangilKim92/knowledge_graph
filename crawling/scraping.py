@@ -7,6 +7,7 @@ from os import makedirs
 import os.path, time, re, json, requests, inspect, os, math
 from collections import namedtuple
 from datetime import datetime
+import os
 import urllib.request
 
 config = {
@@ -66,8 +67,11 @@ class Scraping:
             return
 
         try:
-            req = requests.get(url, headers= self.headers,timeout=2).text
-            soup = BeautifulSoup(req,'lxml')
+
+            url = urllib.parse.quote(url, safe=':/&?=')
+            req = Request(url, headers = self.headers)
+            site = urlopen(req, timeout=2)
+            soup = BeautifulSoup(site.read(),'lxml')
         except Exception as e:
             log.error("find_url() line="+str(inspect.currentframe().f_lineno)+' Error: '+str(e))
             return None
@@ -86,8 +90,16 @@ class Scraping:
                 continue
 
             #request q보내려는 url가 실행파일, 집파일, rmp, deb, gz인 경우 건너뛴다.
-            if re.search('(exe)$|(zip)$|(rpm)$|(gz)$|(deb)$|(txt)$|(csv)$|(pdf)$|(ppt)$', temp_url):
+            
+            if 'Content-Type' not in site.headers:
+                print()
                 continue
+            
+            if 'text/html' not in site.headers['Content-Type']:
+                continue
+                
+            #if re.search('(exe)$|(zip)$|(rpm)$|(gz)$|(deb)$|(txt)$|(csv)$|(pdf)$|(ppt)$', temp_url):
+            #    continue
 
             if 'https' in temp_url:
                 #절대주소
@@ -147,7 +159,6 @@ class Scraping:
             if os.path.exists(save_file):
                 log.info('download_file() File= {} is already exists'.format(url))
                 return False
-
             req = Request(url, headers = self.headers)
             site = urlopen(req,timeout = 2).read()
             #사이트가 너무 크면 넘어감
@@ -194,7 +205,7 @@ class Scraping:
                     log.info("scraping() Line = "+str(inspect.currentframe().f_lineno)+" -> max: {} 까지 완료".format(number))
                     return
                 url  = self.links.popleft()
-                print(a, ' ', url)
+                print(number, '개 scarping완료 ', url)
                 check = self.download_file(url)
                 if check:
                     self.find_content(url)

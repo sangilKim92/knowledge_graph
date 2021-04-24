@@ -25,7 +25,7 @@ class utils:
         global config
         Config = namedtuple('Config',('files_folder','visited_file','word_idf_file','word_files'))
         try:
-            with open("./config2.json", "r") as st_json:
+            with open("./util.json", "r") as st_json:
                 config = json.loads(st_json.read())
         except Exception as e:
             log.error("init() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
@@ -95,25 +95,34 @@ class utils:
         #visited_file
         visited = self.get_visited_file(self.config.visited_file)
         items = self.get_file_list(self.config.files_folder)
+        words = self.get_file_list(self.config.word_files)
+        #item은 html파일 리스트
         for item in items:
             if not os.path.isfile(item):
                 continue
 
             if item in visited:
                 continue
-
-            with open(item,'r',encoding='utf-8') as f:
-                html = f.read()
-                html = re.sub('[^가-힣ㄱ-ㅎ ]',' ',html)
-                html = re.sub(r'(.)\1+',r'\1\1',html)
-                for word in m.pos(html):
-                    if word[1] not in ['NNP','NNG','NNB','VA']:
-                        continue
-                    if (word[0]+'.csv') in items:
-                        with ope
-
-
-        pass
+            try:
+                with open(item,'r',encoding='utf-8') as f:
+                    html = f.read()
+                    html = re.sub('[^가-힣ㄱ-ㅎ ]',' ',html)
+                    html = re.sub(r'(.)\1+',r'\1\1',html)
+                    for word in m.pos(html):
+                        if word[1] not in ['NNP','NNG','NNB','VA']:
+                            continue
+                        if (word[0]+'.csv') not in words:
+                            #그 단어가 word_files 리스트안에 없다는 뜻이니 새롭게 만든다.
+                            with open(word[0]+.'.csv','w',encoding='utf-8') as f1:
+                                f.write(item)
+                                f.close()
+                        else:    
+                            with open(word[0]+'.csv'),'a',encoding='utf-8') as f2:
+                                f.write(item)
+                                f.close()
+            except Exception as e:
+                log.error("make_linked_list() Line ="+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+        return 
 
     def get_visited_file(self, file):
         try:
