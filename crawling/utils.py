@@ -88,8 +88,31 @@ class utils:
                      f.write(word)
                      f.close()
 
-    def make_linked_list(self, folder, htmls, save_pos):
+    def make_linked_list(self, files_folder, htmls, save_pos):
         #visited file에 없다면 폴더 words안의 csv파일에 추가시킨다.
+        #files_folder
+        #word_files
+        #visited_file
+        visited = self.get_visited_file(self.config.visited_file)
+        items = self.get_file_list(self.config.files_folder)
+        for item in items:
+            if not os.path.isfile(item):
+                continue
+
+            if item in visited:
+                continue
+
+            with open(item,'r',encoding='utf-8') as f:
+                html = f.read()
+                html = re.sub('[^가-힣ㄱ-ㅎ ]',' ',html)
+                html = re.sub(r'(.)\1+',r'\1\1',html)
+                for word in m.pos(html):
+                    if word[1] not in ['NNP','NNG','NNB','VA']:
+                        continue
+                    if (word[0]+'.csv') in items:
+                        with ope
+
+
         pass
 
     def get_visited_file(self, file):
@@ -119,23 +142,27 @@ class utils:
         #print(visited)
         for item in self.get_file_list(folder):
             #print(item)
-            if os.path.isfile(item) and item not in visited:
-                encoding = ['utf-8', 'cp949']
-                for encode in encoding:
-                    print(encode)
-                    try:
-                        with open(item,'r', encoding = encode) as f:
-                            html = f.read()
-                            html = re.sub('[^가-힣ㄱ-ㅎ ]',' ',html)
-                            html = re.sub(r'(.)\1+',r'\1\1',html)
-                            for word in m.pos(html):
-                                if word[1] in ['NNP','NNG','NNB','VA']:
-                                    answer.setdefault(word[0],1)
-                                    answer[word[0]] = answer[word[0]] + 1
-                            visited.append(item)
-                            check = True
-                    except Exception as e:
-                        log.error('Files_to_map() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
+            if not os.path.isfile(item):
+                continue
+            if item in visited:
+                continue
+
+            encoding = ['utf-8', 'cp949']
+            for encode in encoding:
+                try:
+                    with open(item,'r', encoding = encode) as f:
+                        html = f.read()
+                        html = re.sub('[^가-힣ㄱ-ㅎ ]',' ',html)
+                        html = re.sub(r'(.)\1+',r'\1\1',html)
+                        for word in m.pos(html):
+                            if word[1] not in ['NNP','NNG','NNB','VA']:
+                                continue
+                            answer.setdefault(word[0],1)
+                            answer[word[0]] = answer[word[0]] + 1
+                        visited.append(item)
+                        check = True
+                except Exception as e:
+                    log.error('Files_to_map() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
         if answer:
             try:
                 json.dump(answer,open('word_idf.json','w'))
