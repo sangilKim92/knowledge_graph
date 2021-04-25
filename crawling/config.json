@@ -1,10 +1,10 @@
 {
     "save_file":"/home/data/crawling/data/",
     "abs_save_file":"/home/data/crawling/abs_data/",
-    "link_level":7,
-    "max":20000000,
+    "link_level":20,
+    "max":10000000000,
     "thread":1,
-    "allowed_url":[],
+    "allowed_url":["daum","naver","story"],
     "not_allowed_url":[],
     "url":"https://www.daum.net",
     "query":[]

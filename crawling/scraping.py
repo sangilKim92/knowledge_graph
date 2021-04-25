@@ -317,7 +317,7 @@ class Scraping:
         except Exception as e:
             log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
         
-        return all_tag[pos].text
+        return 
 
     
     def number_of_tag(self,tag):
