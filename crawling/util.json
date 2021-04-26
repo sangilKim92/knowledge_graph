@@ -1,5 +1,5 @@
 {
-    "files_folder":"./data/",
+    "files_folder":"/home/data/crawling/data/",
     "visited_file":"./visited_file.csv'",
     "word_idf_file":"./word_idf.json",
     "word_files":"./words/"

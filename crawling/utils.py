@@ -31,14 +31,20 @@ class utils:
             log.error("init() line="+str(inspect.currentframe().f_lineno)+' '+str(e))
         finally:
             self.config = Config(*config.values())
-        self.save_map(self.config.word_files,self.config.word_idf_file)
-        #file_list = self.files_to_map(folder,visited)
-        #(self.get_visited_file(visited))
+        """
+        tf-idf는 희소벡터가 너무 많이 생긴다.
+        이를 없앨 수 있는 dense 임베딩을 고려해보자.
+    
+        """
+        #file_list = self.files_to_map(self.config.files_folder,self.config.visited_file)
+        #self.save_map(self.config.word_files,self.config.word_idf_file)
         
-        #array과 dic, corpus를 저장시키고
-        #비교할 query문과 array를 dic을 활용하여 비교한 다음 관련 corpus를 가져온다.
-        #self.save_array_file()
-
+        #file_to_map으로 word_idf.json과 visited_file.csv를 만든다.
+        #word_idf.json을 이용하여 save_map으로 단어마다 csv파일을 만든다.
+        #각 html파일이 가지고 있는 단어를 csv파일에 연결시킨다.
+        #파일 오픈이 2번해야되어 시간이 오래걸린다. 줄일 수 있는 방법 찾아야 한다.
+        
+        
     def save_file(self, name,file1):
         with open(name,'wb') as wb:
             for idx, item in enumerate(file1):
@@ -75,7 +81,7 @@ class utils:
         
     def save_map(self,word_files, word_idf_file):
         if not word_files:
-            folder='./'
+            word_files='./'
 
         if not os.path.exists(word_files):
             log.info("save_map() line = "+str(inspect.currentframe().f_lineno)+" makedirs")
@@ -103,6 +109,10 @@ class utils:
 
             if item in visited:
                 continue
+            #하나 읽고 하나 쓰고는 너무 오래 걸린다.
+            #만약 없다면 바로 만들고 쓰면 되지만
+            #있다면 dictionary 와 list를 활용하여 다 집어넣은다음 마지막에 dictionary와 list를 넣는 것으로 하자.
+            
             try:
                 with open(item,'r',encoding='utf-8') as f:
                     html = f.read()
@@ -113,13 +123,13 @@ class utils:
                             continue
                         if (word[0]+'.csv') not in words:
                             #그 단어가 word_files 리스트안에 없다는 뜻이니 새롭게 만든다.
-                            with open(word[0]+.'.csv','w',encoding='utf-8') as f1:
-                                f.write(item)
-                                f.close()
+                            with open(word[0] + '.csv','w',encoding='utf-8') as f1:
+                                f1.write(item)
+                                f1.close()
                         else:    
-                            with open(word[0]+'.csv'),'a',encoding='utf-8') as f2:
-                                f.write(item)
-                                f.close()
+                            with open(word[0] + '.csv','a',encoding='utf-8') as f2:
+                                f2.write(item)
+                                f2.close()
             except Exception as e:
                 log.error("make_linked_list() Line ="+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
         return 
@@ -148,6 +158,10 @@ class utils:
         #이미 넣은 파일들은 건너뛰게 하는 함수
         visited = self.get_visited_file(visited_file)
         check = False
+        try:
+            with open('word_idf.json','r') as f:
+                html = f.read()
+                
         #print(visited)
         for item in self.get_file_list(folder):
             #print(item)
@@ -170,10 +184,12 @@ class utils:
                             answer[word[0]] = answer[word[0]] + 1
                         visited.append(item)
                         check = True
+                        break
                 except Exception as e:
                     log.error('Files_to_map() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
         if answer:
             try:
+                #덮어쓰기가 아니라 추가로 올려야 한다.
                 json.dump(answer,open('word_idf.json','w'))
             except Exception as e:
                 log.error("Files_to_map() Line = " +str(inspect.currentframe().f_lineno)+" Error: "+str(e))

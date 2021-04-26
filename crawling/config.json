@@ -6,6 +6,6 @@
     "thread":1,
     "allowed_url":["daum","naver","story"],
     "not_allowed_url":[],
-    "url":"https://www.daum.net",
+    "url":"https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=%EA%B9%80%EC%B2%9C",
     "query":[]
 }
