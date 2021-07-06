@@ -81,7 +81,6 @@ class Scraping:
             allow = self.allowed_url_check(temp_url)
             if not allow:
                 continue
-
             #만약 상대주소로 되어있다면 not_allowed_url_check에 넣은게 들어갈 수 도 있다.
             # 가령 /policy/privacy.html 같은 경우 절대주소로 바꾸면 www.naver.com/policy/privacy.html 로 된다.
             # 따라서 걸러지지 않는데 이는 처음 시작 주소를 잘선택하면 문제없다. 
@@ -92,7 +91,6 @@ class Scraping:
             #request q보내려는 url가 실행파일, 집파일, rmp, deb, gz인 경우 건너뛴다.
             
             if 'Content-Type' not in site.headers:
-                print()
                 continue
             
             if 'text/html' not in site.headers['Content-Type']:
@@ -267,6 +265,21 @@ class Scraping:
                 return
 
             req = requests.get(url, headers= self.headers,timeout=2).text
+            
+            pattern1 = ("<script([^'\"]|\"[^\"]*\"|'[^']*')*?(</script>|/>)")
+            pattern2 = ("<meta([^'\"]|\"[^\"]*\"|'[^']*')*?(</meta>|/>)")
+            pattern3 = ("<link([^'\"]|\"[^\"]*\"|'[^']*')*?(</link>|/>)")
+            pattern4 = ("<style([^'\"]|\"[^\"]*\"|'[^']*')*?(</style>|/>)")
+
+            pattern = []
+            pattern.append(pattern1)
+            pattern.append(pattern2)
+            pattern.append(pattern3)
+            pattern.append(pattern4)
+
+            for pat in pattern:
+                req = re.sub(pat,"", req, flags = re.S)
+
             soup = BeautifulSoup(req,'lxml')
     
         except Exception as e:
@@ -275,6 +288,7 @@ class Scraping:
         all_tag = [tag for tag in soup.find_all()]
         #print(len(all_tag))
         body = soup.find('body')
+        #script, style, comment, link 태그는 의미가 없으므로 삭제한다.
         #body의 a link 개수를 넘긴다.
         LCb = self.number_of_a_characters(body)
         #body의 text 길이를 넘긴다.
@@ -282,13 +296,15 @@ class Scraping:
         e = math.log(1)
         """
             식 = CTDi = Ci/Ti * log( (Ci / nLCi * LCi) + (LCb/Cb*Ci) + (e) ) ( Ci* Ti / LCi / LTi)
-            Ci = length of all tag's characters
-            Ti = number of tags
-            nLCi = length of not link tag's characters
-            LCi = length of link tag's characters
-            LTi = number of a link tag's
-            LCb = number of body tag's a link
-            Cb = Length of body all tag's chracters
+            Ci = the number of all characters under i
+            Ti = the number of all tags under i
+            nLCi = the number of all non-hyperlink characters under i
+            LCi = the number of all hyperlink characters under i
+            LTi = the number of all hyperlink tags under i
+            LCb = the number of all hyperlink characters under the <body> tag
+            Cb = the number of all characters under the <body> tag
+
+            i = i is a tag in a  web page
         """
         max_result = 0
         pos = 0

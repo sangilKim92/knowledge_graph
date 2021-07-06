@@ -4,8 +4,8 @@
     "link_level":20,
     "max":10000000000,
     "thread":1,
-    "allowed_url":["daum","naver","story"],
+    "allowed_url":["naver"],
     "not_allowed_url":[],
-    "url":"https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=%EA%B9%80%EC%B2%9C",
-    "query":[]
+    "url":"https://search.naver.com/search.naver?sm=tab_sug.top&where=nexearch&query=%EC%9D%8C%EC%8B%9D&oquery=%EB%A6%AC%EB%B7%B0&tqi=hMn%2Fnsp0J14ssAjRhoRssssstn4-229945&acq=%EC%9D%8C%EC%8B%9D&acr=6&qdt=0",
+    "query":["음식"]
 }

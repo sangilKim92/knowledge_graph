@@ -23,7 +23,7 @@ class check:
         #me.find_url('https://www.naver.com')
         me.scraping()
         #self.get_file(self.read_file(self.get_file_list('./')),'download')
-        lst = glob.glob(os.path.join('./','data')+'/*')
+        """        lst = glob.glob(os.path.join('./','data')+'/*')
         with open(lst[0],'r') as f:
             c = f.read()
         log.cut()
@@ -34,7 +34,7 @@ class check:
             for b in ['네이버','청춘','카페']:
                 if b:result += a
         print(datetime.now()-start)
-        print(result)
+        print(result)"""
 
     def get_file_list(self,folder):
         for item in os.listdir(folder):
