@@ -2,7 +2,7 @@ from kafka.producer import KafkaProducer
 from json import dumps 
 import time 
 
-kafka_topic = "sang_crawl"
+kafka_topic = "Sang_crawl"
 
 def connect_kafka_producer():
     producer = None
