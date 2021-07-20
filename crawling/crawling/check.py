@@ -11,7 +11,9 @@ import urllib.request
 from collections import namedtuple
 import math, os
 from datetime import datetime
-import glob
+import glob, time
+from kafkaProducer import send_to_consumer
+from faker import Faker
 
 
 log = Logger('Check Class')
@@ -19,10 +21,19 @@ class check:
     ha = 0
     def __init__(self,ha):
         log.make()
-        me = Scraping()
+        #me = Scraping()
         #me.find_url('https://www.naver.com')
-        me.scraping()
+        #me.scraping()
         #self.get_file(self.read_file(self.get_file_list('./')),'download')
+
+        fake = Faker()
+        while 1:
+            send_to_consumer({
+                "name": fake.name(),
+                "address" : fake.address(),
+                "created_at" : fake.year()
+            })
+            time.sleep(3)
         """        lst = glob.glob(os.path.join('./','data')+'/*')
         with open(lst[0],'r') as f:
             c = f.read()

@@ -9,7 +9,7 @@ from collections import namedtuple
 from datetime import datetime
 import os
 import urllib.request
-from kafkaConnect import send_to_consumer
+from kafkaProducer import send_to_consumer
 
 config = {
     "save_file":"./data/",
@@ -330,7 +330,7 @@ class Scraping:
             text_file = open(save_file, 'w')
             text_file.write(url+'\n')
             text_file.write(all_tag[pos].text)
-            send_to_consumer(all_tag[pos].text)
+            print(send_to_consumer(all_tag[pos].text))
             log.info('find_content() File = '+save_file+" 생성!")
         except Exception as e:
             log.error('find_content() Line = '+str(inspect.currentframe().f_lineno)+" Error: "+str(e))
