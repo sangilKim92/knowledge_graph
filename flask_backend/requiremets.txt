@@ -1,0 +1,6 @@
+pymongo
+elasticsearch
+ariadne
+neo4j
+requests
+dnspython
