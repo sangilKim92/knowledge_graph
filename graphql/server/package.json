@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@neo4j/graphql": "^1.0.3",
+    "@apollo/federation": "^0.30.0",
+    "@apollo/gateway": "^0.39.0",
+    "@neo4j/graphql": "^1.2.4",
     "@neo4j/graphql-ogm": "^1.0.3",
     "apollo-server": "^2.25.1",
     "body-parser": "^1.19.0",
@@ -22,12 +24,14 @@
     "elasticsearch": "^16.7.2",
     "express": "^4.17.1",
     "get-json": "^1.0.1",
-    "graphql": "^15.5.0",
+    "graphql": "^15.5.1",
     "graphql-depth-limit": "^1.1.0",
     "helmet": "^4.6.0",
     "http": "0.0.1-security",
     "mongoose": "^5.12.14",
     "morgan": "^1.10.0",
-    "neo4j-driver": "^4.3.1"
+    "neo4j-driver": "^4.3.3",
+    "neo4j-graphql-js": "^2.19.4",
+    "wait-on": "^6.0.0"
   }
 }

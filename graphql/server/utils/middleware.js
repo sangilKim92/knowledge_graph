@@ -30,14 +30,14 @@ module.exports = function(app,type){
         app.use(morgan('dev'))
     }
 
-    app.use('/graphql',neo4j_error)
-    app.use('/graphql',(req,res,next)=>{
-        es.ping({
-            requestTimeout:30000,
-        }).then( (data) => {
-            res.send(data);
-        }).catch(next);
-    })
+    // app.use('/graphql',neo4j_error)
+    // app.use('/graphql',(req,res,next)=>{
+    //     es.ping({
+    //         requestTimeout:30000,
+    //     }).then( (data) => {
+    //         res.send(data);
+    //     }).catch(next);
+    // })
 
     app.use(express.json())
     app.use(compression())

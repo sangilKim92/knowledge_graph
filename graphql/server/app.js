@@ -21,7 +21,7 @@ middleware(app,mode)
 async function server_setting(){
     try{
         await db_setting()
-        await apollo(app,config.corsOptions)
+        await apollo.server_setting(app)
         await new Promise(resolve => app.listen(app.get('port'), resolve));
         console.log(`🚀 Server ready at http://localhost:${app.get('port')}/graphql`)
 

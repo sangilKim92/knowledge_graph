@@ -5,7 +5,18 @@ const config = {
     user: process.env.DB_USER,
     pwd: process.env.DB_PASS
     },
-    app_url :'localhost:5000',
+    neo4j_url :{
+        url:'http://localhost:5001/graphql',
+        port: 5001,
+        path: 'graphql'
+
+    },
+    elastic_url:{
+        url:'http://localhost:5002/graphql',
+        port: 5002,
+        path: 'graphql'
+    },
+    app_url : 'localhost:5000',
     api_url : 'localhost:5000',
     corOptions :{
         origin: '*', // 허락하고자 하는 요청 주소
@@ -16,11 +27,11 @@ const config = {
         url:'http://localhost:9200'
     },
     neo4j:{
-        url:'bolt://35.175.115.90:7687',
+        url:'bolt://127.0.0.1:7687',
         secret_key: process.env.NEO_SECRET_KEY,
         user : process.env.NEO_USER,
         pwd : process.env.NEO_PWD,
-        database: 'Movies'
+        database: 'neo4j'
     },
     node_env : 'developer'
 }

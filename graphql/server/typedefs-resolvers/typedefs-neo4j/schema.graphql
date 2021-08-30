@@ -1,0 +1,23 @@
+type Menu {
+   _id: Long!
+   name: String!
+   uuid: String!
+   restaurants: [Restaurant] @relation(name: "HAS_MENU", direction: IN)
+}
+
+type Restaurant {
+   _id: Long!
+   business: String!
+   name: String!
+   uuid: String!
+   has_menu: [Menu] @relation(name: "HAS_MENU", direction: OUT)
+   HAS_MENU_rel: [HAS_MENU]
+}
+
+type HAS_MENU @relation(name: "HAS_MENU") {
+  from: Restaurant!
+  to: Menu!
+  uuid: String!
+}
+
+

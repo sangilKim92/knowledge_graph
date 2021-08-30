@@ -29,6 +29,4 @@ app = create_app(os.getenv("MODE") or 'development', Config)
 #app.run()
 # if __name__ == '__main__':
 #    app.run()
-db = MongoDB.get_databases()
-print(db)
-print(db.list_collection_names())
+#db = MongoDB.get_databases()

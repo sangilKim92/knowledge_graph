@@ -12,7 +12,7 @@ elasitc_type_defs = gql("""
 """)
 
 
-def elastic_resolvers(_, info, _review):
+def elastic_resolvers(source, info, _review):
     es = Elastic.elastic_connect()
     body = {
         "query":{
@@ -21,6 +21,13 @@ def elastic_resolvers(_, info, _review):
             }
         }
     }
+    print(source)
+    print(info)
+    # for a in info.context['request']:
+    #     print(a,': ',info.context['request'][a])
+    #     print('-'*120)
+    print(_review)
+
     res = es.search(index="my-index-restaurant", doc_type="_doc", body=body)
     if res['hits']['total']['value'] > 0:
         result = []

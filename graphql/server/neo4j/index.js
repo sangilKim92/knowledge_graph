@@ -2,8 +2,6 @@ const neo4j = require('neo4j-driver')
 const config = require('../utils/config')
 
 
-driver = new neo4j.driver(config.neo4j.url, neo4j.auth.basic(config.neo4j.user, config.neo4j.pwd),{ disableLosslessIntegers: true })
-
 function connect(){
     return new Promise((resolve,reject)=>{
         driver = new neo4j.driver(config.neo4j.url, neo4j.auth.basic(config.neo4j.user, config.neo4j.pwd))
@@ -49,6 +47,5 @@ function write (cypher, params = {}, database = config.neo4j.database){
 module.exports = {
     read: read,
     write: write,
-    connect: connect,
-    driver: driver
+    connect: connect
 }

@@ -10,7 +10,8 @@ const db_config = function db(){
             dbName: config.mongodb.dbName,
             user: config.mongodb.user,
             pass: config.mongodb.pwd,
-            useNewUrlParser: true
+            useNewUrlParser: true,
+            useUnifiedTopology: true
             })
             console.log('db connected!')
             
