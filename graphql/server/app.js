@@ -8,7 +8,7 @@ const db_setting = require('./models')
 const config = require('./utils/config')
 const middleware = require('./utils/middleware')
 const es = require('./elastic')
-const neo4j = require('./neo4j')
+const neo4j = require('./utils/neo4j')
 
 root_path = path.resolve(__dirname);
 
@@ -20,14 +20,17 @@ middleware(app,mode)
 
 async function server_setting(){
     try{
-        await db_setting()
-        await apollo.server_setting(app)
+        await appPromise(app)
         await new Promise(resolve => app.listen(app.get('port'), resolve));
-        console.log(`🚀 Server ready at http://localhost:${app.get('port')}/graphql`)
+        console.log(`🚀 Server ready at ${config.app_url}`)
 
     }catch(err){
         console.log(err)
     }
 }
-server_setting()
 
+function appPromise(app){
+    return Promise.all([apollo.server_setting(app), db_setting()])
+}
+
+server_setting()

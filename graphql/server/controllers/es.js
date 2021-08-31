@@ -1,23 +1,26 @@
 const client = require('../elastic')
 
-```
-elasticsearch를 검색엔진으로 활용.
-나온 결과들에 대해서 noej4를 이용해 순서매김 진행.
-```
-
-const es = (parent, args, context) =>{
-    return new Promise((resolve, reject)=>{
+const es = async (parent, args, context) =>{
         try
         {
-            const rs = await client.
-            console.log(rs)
-            resolve(rs)
+            console.log(args.review)
+            const rs = await client.search({
+                index: 'my-index-restaurant',
+                q: `review:${args.review}`
+            })
+            result = []
+            console.log(rs['hits']['hits'])
+            for(var pos = 0; pos < rs['hits']['hits'].length; pos++){
+                result.push(rs['hits']['hits'][pos]['_source'])
+            }
+            console.log(result)
+            return result
+
         }
         catch(err)
         {
-            reject(err)
+            return (err)
         }
-    })
 }
 
 

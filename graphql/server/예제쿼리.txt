@@ -1,0 +1,29 @@
+playground 우측 DOCS 및 SCHEMA를 활용해 query를 알 수 있음
+
+{
+  people{
+    name
+  }
+}
+
+{
+	Menu{
+    name
+    uuid
+  }
+}
+
+{
+    menuCount
+}
+
+mutation{
+    AddMenuRestaurants(from:{business:"1532089453"},to:{name:"테스트음식"}){
+    from{
+    name
+  }
+    to{
+      name
+    }
+  }
+}

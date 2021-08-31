@@ -1,7 +1,8 @@
 const { gql} = require('apollo-server')
 const ctrs = require('../../controllers/person')
 
-const typeDefs = gql`
+
+const typeDefs = `
 type movie {
     id: ID!
     released:Int!
@@ -12,8 +13,21 @@ type movie {
 
 const resolvers = {
     Query:{
-        movie : async (parent, args, context) => ctrs.movie(parent, args, context),
-        movies : async (parent, args, context) =>ctrs.movies(parent, args, context)
+        movie : async (parent, args, context) =>
+        {
+            try{   
+                await ctrs.movie(parent, args, context)
+            }catch(err){
+                console.log(er)
+            }
+        },
+        movies : async (parent, args, context) => {
+            try{ 
+                await ctrs.movies(parent, args, context)
+            }catch(err){
+                console.log(err)
+            }
+        }
     }
 }
 

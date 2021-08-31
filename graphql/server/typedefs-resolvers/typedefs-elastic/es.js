@@ -1,9 +1,9 @@
 const { gql } = require('apollo-server')
 const ctrs = require('../../controllers/es')
 
-typeDefs = gql`
+const typeDefs = `
     type es{
-        text:String!
+        review:String!
         score:Int!
     }
 `
@@ -11,7 +11,14 @@ typeDefs = gql`
 
 const resolvers = {
     Query:{
-        es : async (parent, args, context) => ctrs.movie(parent, args, context)
+        elastic : async (parent, args, context) => {
+        try{
+            return await ctrs.es(parent, args, context)
+        }catch(err){
+            console.log("Error: ",err)
+            return {"data":null}
+        }
+        }
     }
 }
 

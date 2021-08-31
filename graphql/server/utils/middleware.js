@@ -6,7 +6,7 @@ const compression = require('compression')
 const auth = require('./auth')
 const config = require('./config')
 const es = require('../elastic')
-const neo4j_error = require('../neo4j/neo4j-error-handler')
+const neo4j_error = require('../errors/neo4j-error-handler')
 
 port = process.env.PORT || 5000
 

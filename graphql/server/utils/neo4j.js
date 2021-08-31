@@ -1,5 +1,5 @@
 const neo4j = require('neo4j-driver')
-const config = require('../utils/config')
+const config = require('./config')
 
 
 function connect(){

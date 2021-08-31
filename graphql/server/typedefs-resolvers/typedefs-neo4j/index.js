@@ -1,17 +1,13 @@
 const { ApolloServer } = require('apollo-server')
 const { inferSchema, makeAugmentedSchema } = require("neo4j-graphql-js")
 const depthLimit = require('graphql-depth-limit')
-const fs = require('fs')
-
 const config = require('../../utils/config')
 const typeDefs = require('./graphql-schema')
-
-const { ApolloGateway} = require('@apollo/gateway')
 const { buildFederatedSchema } = require("@apollo/federation")
- 
+const fs = require('fs')
 
-function server_setting(driver){
-  return new Promise((resolve,reject)=>{
+ 
+async function server_setting(driver){
     const schema = makeAugmentedSchema({ typeDefs , config: { isFederated: true }});
 
     const neo4j_server = new ApolloServer({
@@ -25,22 +21,15 @@ function server_setting(driver){
       playground: true
   })
 
-    neo4j_server.listen({ port: config.neo4j_url.port}).then(({ url })=>{
-    console.log(`🚀 Neo4j ready at ${url}`)
-  })
-  // server.start()
-  // server.applyMiddleware({ app,  path: '/graphql', cors : corsOptions})
-  resolve()
-  })
-
+  await neo4j_server.listen({ port: config.neo4j_url.port})
+  console.log(`🚀 Neo4j ready at ${config.neo4j_url.url}`)
 }
 
 function make_schema(driver){
   return new Promise((resolve, reject)=>{
 
     inferSchema(driver).then((result) =>{
-  
-      fs.writeFile('./typedefs-resolvers/typedefs-neo4j/schema.graphql', result.typeDefs, function(err){
+      fs.writeFile(config.neo4j.schema_url, result.typeDefs, function(err){
         if (err) return console.log(err);
       })
       console.log("make_schema is finished!")

@@ -1,6 +1,6 @@
 const apollo_neo4j = require('./typedefs-neo4j')
 const apollo_elastic = require('./typedefs-elastic')
-const neo4j = require('../neo4j')
+const neo4j = require('../utils/neo4j')
 const { ApolloGateway } = require('@apollo/gateway')
 const { ApolloServer } = require('apollo-server-express')
 const config = require('../utils/config')
@@ -10,16 +10,15 @@ async function server_setting(app){
     
     const driver = await neo4j.connect()
     await apollo_neo4j.make_schema(driver)
-    await apollo_neo4j.server_setting(driver)
+    await graphPromise(driver)
 
-    await apollo_elastic.server_setting().catch(function(error){
-        console.log(error)
-    })
     const gateway = await new ApolloGateway({
         serviceList: [
             {name: 'neo4j', url: config.neo4j_url.url },
             {name: 'elastic', url: config.elastic_url.url }
-        ]
+        ],
+
+        __exposeQueryPlanExperimental: false,
     })
     // Start gateway
     const options= { 
@@ -29,13 +28,18 @@ async function server_setting(app){
         .then(()=>{
         const server = new ApolloServer({
         gateway,
-        subscriptions: false
+        subscriptions: false,
+        engine: false
     })
     server.start()
     server.applyMiddleware({ app,  path: '/graphql', cors : config.corOptions})
     })
 
     return;
+}
+
+function graphPromise(driver){
+    return Promise.all([apollo_neo4j.server_setting(driver), apollo_elastic.server_setting()])
 }
 
 module.exports = {

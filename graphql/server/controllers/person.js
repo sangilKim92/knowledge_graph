@@ -1,13 +1,9 @@
-const driver = require('../neo4j')
-const cypher = require('../neo4j/cypher')
+const driver = require('../utils/neo4j')
 
 const person = (parent, args, context) =>{
     return new Promise(async (resolve, reject)=>{
         try{
-            console.log(new Date());
-            const rs = await driver.read(cypher.personCypher, {"name":args.name})
-            console.log(new Date());
-            resolve(rs)
+            resolve(null)
         }catch(err){
             reject(err)
         }
@@ -18,12 +14,7 @@ const person = (parent, args, context) =>{
 const people = ( parent, args, context ) => {
     return new Promise(async (resolve, reject) => {
         try{
-            console.log(new Date());
-            const rs = await driver.read(cypher.peopleCypher)
-            var jsonArray = new Array();
-            rs['records'].map( (item) => jsonArray.push(item._fields[0]['properties']))
-            console.log(new Date());
-            resolve(jsonArray)
+            resolve(null)
         }catch(err){
             reject(err)
         }

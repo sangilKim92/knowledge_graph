@@ -2,11 +2,11 @@ const config = require('../utils/config')
 const es = require('./index')
 const constants = require('../utils/constant')
 const bodybuilder = require('bodybuilder');
-const oError = require('../utils/error')
+const oError = require('../errors/error')
 
 function manger(ES_METHOD){
     switch(ES_METHOD){
-        case constants.ELASTIC_SEARCH.:
+        case constants.ELASTIC_SEARCH:
             return 0;
         case constants.ES_NUM.PUT:
             return;

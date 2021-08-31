@@ -1,7 +1,7 @@
 const { gql} = require('apollo-server')
 const ctrs = require('../../controllers/person')
 
-const typeDefs = gql`
+const typeDefs = `
 type person  {
     id: ID!
     born: Int!
