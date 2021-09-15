@@ -27,3 +27,17 @@ mutation{
     }
   }
 }
+
+{
+	elastic(review:"우동집"){
+    review
+  }
+}
+
+MERGE (s:SUBJECT {name: $subject})
+MERGE (o:OBJECT {name: $obj})
+MERGE (s) -[r:RELATION {name: $relation}]-> (o)
+
+NER , relation extraction, attribute structure 을 활용하여 cpyher 만들기
+만든 cpyher을 보내 유저가 확인 또는 올바르게 수정할 수 있게 하기
+

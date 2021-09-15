@@ -1,5 +1,5 @@
 const apollo_neo4j = require('./typedefs-neo4j')
-const apollo_elastic = require('./typedefs-elastic')
+const apollo_elastic = require('./typedefs-main')
 const neo4j = require('../utils/neo4j')
 const { ApolloGateway } = require('@apollo/gateway')
 const { ApolloServer } = require('apollo-server-express')
@@ -15,7 +15,7 @@ async function server_setting(app){
     const gateway = await new ApolloGateway({
         serviceList: [
             {name: 'neo4j', url: config.neo4j_url.url },
-            {name: 'elastic', url: config.elastic_url.url }
+            {name: 'main', url: config.main_url.url }
         ],
 
         __exposeQueryPlanExperimental: false,

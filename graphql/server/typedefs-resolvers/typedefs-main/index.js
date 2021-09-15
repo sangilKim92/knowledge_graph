@@ -7,20 +7,24 @@ const config = require('../../utils/config')
 const person = require('./person')
 const query = require('./_query')
 const mutations = require('./_mutations')
+const neo4j = require('./neo4j')
 const movie = require('./movie')
 const es = require('./es')
 const { buildFederatedSchema } = require('@apollo/federation')
+const { neo4j_read } = require('../../controllers/neo4j')
 
 const typeDefs = gql(`${query}` + 
                      `${mutations}` + 
                      `${person.typeDefs}` + 
                      `${movie.typeDefs}` +
-                     `${es.typeDefs}`)
+                     `${es.typeDefs}` +
+                     `${neo4j.typeDefs}`)
 
 let obj = [ 
           person.resolvers ,
           movie.resolvers ,
-          es.resolvers 
+          es.resolvers ,
+          neo4j.resolvers
           ]
 
 
@@ -43,8 +47,8 @@ async function server_setting(){
     playground: true
   })
 
-  await elastic_server.listen({ port: config.elastic_url.port})
-  console.log(`🚀 elastic ready at ${config.elastic_url.url}`)
+  await elastic_server.listen({ port: config.main_url.port})
+  console.log(`🚀 Main ready at ${config.main_url.url}`)
 }
 
 module.exports = {

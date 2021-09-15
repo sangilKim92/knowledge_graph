@@ -12,7 +12,7 @@ const config = {
         path: 'graphql'
 
     },
-    elastic_url:{
+    main_url:{
         url:'http://localhost:5002/graphql',
         port: 5002,
         path: 'graphql'

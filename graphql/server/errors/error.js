@@ -1,8 +1,11 @@
-const error = {
-    NO_ELASTICSEARCH_QUERY:{
-        status_code: 401,
-        message: "there is no search query in request"
+const { ApolloError } = require('apollo-server-errors')
+
+const error =  class MyError extends ApolloError {
+    constructor(message) {
+      super(message, 'MY_ERROR_CODE');
+  
+      Object.defineProperty(this, 'name', { value: 'MyError' });
     }
-}
+  }
 
 module.exports = error;

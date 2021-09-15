@@ -1,23 +1,109 @@
-type Menu {
+type User {
    _id: Long!
+   age: Int!
+   average_stars: Float!
+   fans: Int!
+   gender: String!
+   name: String!
+   review_count: Int!
+   user_id: String!
+   uuid: String!
+   has_friend: [User] @relation(name: "HAS_FRIEND", direction: OUT)
+   HAS_FRIEND_rel: [HAS_FRIEND]
+   write_review: [Review] @relation(name: "WRITE_REVIEW", direction: OUT)
+   WRITE_REVIEW_rel: [WRITE_REVIEW]
+   visit: [Restaurant] @relation(name: "VISIT", direction: OUT)
+   VISIT_rel: [VISIT]
+   rate: [Restaurant] @relation(name: "RATE", direction: OUT)
+   RATE_rel: [RATE]
+}
+
+type Category {
+   _id: Long!
+   category_id: String!
    name: String!
    uuid: String!
-   restaurants: [Restaurant] @relation(name: "HAS_MENU", direction: IN)
+   restaurants: [Restaurant] @relation(name: "HAS_CATEGORY", direction: IN)
+}
+
+type Review {
+   _id: Long!
+   review_id: String!
+   text: String!
+   uuid: String!
+   restaurants: [Restaurant] @relation(name: "HAS_REVIEW", direction: IN)
+   users: [User] @relation(name: "WRITE_REVIEW", direction: IN)
+}
+
+type City {
+   _id: Long!
+   city_id: String!
+   name: String!
+   uuid: String!
+}
+
+type Country {
+   _id: Long!
+   country_id: String!
+   name: String!
+   uuid: String!
 }
 
 type Restaurant {
    _id: Long!
-   business: String!
+   address: String!
    name: String!
+   postal_code: String!
+   rating: Float!
+   rest_id: String!
+   restaurant_photos: String!
    uuid: String!
-   has_menu: [Menu] @relation(name: "HAS_MENU", direction: OUT)
-   HAS_MENU_rel: [HAS_MENU]
+   has_category: [Category] @relation(name: "HAS_CATEGORY", direction: OUT)
+   HAS_CATEGORY_rel: [HAS_CATEGORY]
+   has_review: [Review] @relation(name: "HAS_REVIEW", direction: OUT)
+   HAS_REVIEW_rel: [HAS_REVIEW]
+   users_visit: [User] @relation(name: "VISIT", direction: IN)
+   users_rate: [User] @relation(name: "RATE", direction: IN)
 }
 
-type HAS_MENU @relation(name: "HAS_MENU") {
-  from: Restaurant!
-  to: Menu!
+type HAS_FRIEND @relation(name: "HAS_FRIEND") {
+  from: User!
+  to: User!
   uuid: String!
 }
+
+type HAS_CATEGORY @relation(name: "HAS_CATEGORY") {
+  from: Restaurant!
+  to: Category!
+  uuid: String!
+}
+
+type HAS_REVIEW @relation(name: "HAS_REVIEW") {
+  from: Restaurant!
+  to: Review!
+  uuid: String!
+}
+
+type WRITE_REVIEW @relation(name: "WRITE_REVIEW") {
+  from: User!
+  to: Review!
+  date: String!
+  uuid: String!
+}
+
+type VISIT @relation(name: "VISIT") {
+  from: User!
+  to: Restaurant!
+  relWeight: Int!
+  uuid: String!
+}
+
+type RATE @relation(name: "RATE") {
+  from: User!
+  to: Restaurant!
+  relWeight: Float!
+  uuid: String!
+}
+
 
 

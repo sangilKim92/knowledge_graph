@@ -8,18 +8,17 @@ const es = async (parent, args, context) =>{
                 index: 'my-index-restaurant',
                 q: `review:${args.review}`
             })
-            result = []
-            console.log(rs['hits']['hits'])
+
+            let result = []
             for(var pos = 0; pos < rs['hits']['hits'].length; pos++){
                 result.push(rs['hits']['hits'][pos]['_source'])
             }
-            console.log(result)
             return result
 
         }
         catch(err)
         {
-            return (err)
+            return err
         }
 }
 

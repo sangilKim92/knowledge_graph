@@ -7,6 +7,7 @@ type Query{
     movies: [movie]
     movie(title:String!): movie
     elastic(review:String!): [es]
+    neo4j(cypher:String!):[neo4j]
 }
 `
 module.exports = typeDefs
